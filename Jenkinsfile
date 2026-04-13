@@ -10,12 +10,17 @@ pipeline {
         IMAGE_NAME = "${env.REGISTRY_URL}/${PROJECT_NAME}:${env.BUILD_NUMBER}"
     }
 
+    parameters {
+        choice(choices: [true, false], description: '是否发布API', name: 'DEPLOY_API')
+    }
+
     tools {
         maven 'M3'
     }
 
     stages {
         stage('构建并发布') {
+            when { expression { params.DEPLOY_API == "true" } }
             steps {
                 script {
                     dir(DIR_API) {
@@ -32,6 +37,7 @@ pipeline {
                 script {
                     sh '''
                         echo '============================== 构建镜像 =============================='
+                        cp /var/jenkins_home/settings.xml ./${DIR_SERVICE}/settings.xml
                         docker build -t ${IMAGE_NAME} -f ../Dockerfile ./${DIR_SERVICE}/
                     '''
                 }
