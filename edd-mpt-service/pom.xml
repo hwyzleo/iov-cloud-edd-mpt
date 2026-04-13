@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>net.hwyz.iov.cloud.parent</groupId>
+        <artifactId>service</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>net.hwyz.iov.cloud.edd</groupId>
+    <artifactId>edd-mpt-service</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <properties>
+        <edd-mpt.version>0.0.1-SNAPSHOT</edd-mpt.version>
+    </properties>
+
+    <dependencies>
+        <!-- 系统API -->
+        <dependency>
+            <groupId>net.hwyz.iov.cloud.edd</groupId>
+            <artifactId>edd-mpt-api</artifactId>
+            <version>${edd-mpt.version}</version>
+        </dependency>
+
+        <!-- 框架：安全 -->
+        <dependency>
+            <groupId>net.hwyz.iov.cloud.framework</groupId>
+            <artifactId>framework-security-starter</artifactId>
+        </dependency>
+
+        <!-- 框架：审计 -->
+        <dependency>
+            <groupId>net.hwyz.iov.cloud.framework</groupId>
+            <artifactId>framework-audit-starter</artifactId>
+        </dependency>
+
+        <!-- 框架：数据权限范围 -->
+        <dependency>
+            <groupId>net.hwyz.iov.cloud.framework</groupId>
+            <artifactId>framework-datascope-starter</artifactId>
+        </dependency>
+
+        <!-- 框架：MySQL -->
+        <dependency>
+            <groupId>net.hwyz.iov.cloud.framework</groupId>
+            <artifactId>framework-mysql-starter</artifactId>
+        </dependency>
+
+        <!-- 框架：Redis -->
+        <dependency>
+            <groupId>net.hwyz.iov.cloud.framework</groupId>
+            <artifactId>framework-redis-starter</artifactId>
+        </dependency>
+
+        <!-- Java Servlet -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- xml绑定 -->
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

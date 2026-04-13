@@ -4,14 +4,15 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <packaging>pom</packaging>
     <modules>
-        <module>system-api</module>
-        <module>system-service</module>
+        <module>edd-mpt-api</module>
+        <module>edd-mpt-service</module>
     </modules>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>net.hwyz.iov.cloud.mpt</groupId>
-    <artifactId>system</artifactId>
+    <groupId>net.hwyz.iov.cloud.edd</groupId>
+    <artifactId>edd-mpt</artifactId>
+    <name>edd-mpt</name>
     <version>0.0.1-SNAPSHOT</version>
-    <description>系统管理</description>
+    <description>MPT - Management Portal</description>
 
 </project>
