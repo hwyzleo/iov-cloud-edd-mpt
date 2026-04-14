@@ -38,7 +38,7 @@ pipeline {
                     sh '''
                         echo '============================== 构建镜像 =============================='
                         cp /var/jenkins_home/settings.xml ./${DIR_SERVICE}/settings.xml
-                        docker build -t ${IMAGE_NAME} -f ../Dockerfile ./${DIR_SERVICE}/
+                        docker build --no-cache -t ${IMAGE_NAME} -f ../Dockerfile ./${DIR_SERVICE}/
                     '''
                 }
             }
