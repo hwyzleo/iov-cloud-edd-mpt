@@ -11,8 +11,8 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'DEPLOY_API', choices: [true, false], description: '是否发布API')
-        choice(name: 'DOCKER_NO_CACHE', choices: [true, false], description: '构建镜像时是否使用 --no-cache')
+        choice(name: 'DEPLOY_API', choices: [false, true], description: '是否发布API')
+        choice(name: 'DOCKER_NO_CACHE', choices: [false, true], description: '构建镜像时是否使用 --no-cache')
     }
 
     tools {
@@ -36,7 +36,7 @@ pipeline {
         stage('构建镜像') {
             steps {
                 script {
-                    def noCacheArg = params.DOCKER_NO_CACHE == 'true' ? '--no-cache' : ''
+                    def noCacheArg = params.DOCKER_NO_CACHE == "true" ? "--no-cache" : ""
                     sh '''
                         echo '============================== 构建镜像 =============================='
                         cp /var/jenkins_home/settings.xml ./${DIR_SERVICE}/settings.xml
