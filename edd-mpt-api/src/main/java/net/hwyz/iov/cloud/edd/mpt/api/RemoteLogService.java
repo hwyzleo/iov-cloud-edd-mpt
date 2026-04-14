@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
  *
  * @author hwyz_leo
  */
-@FeignClient(contextId = "remoteLogService", value = ServiceNameConstants.MPT_SYSTEM, fallbackFactory = RemoteLogFallbackFactory.class)
+@FeignClient(contextId = "remoteLogService", value = ServiceNameConstants.EDD_MPT, fallbackFactory = RemoteLogFallbackFactory.class)
 public interface RemoteLogService {
     /**
      * 保存系统日志

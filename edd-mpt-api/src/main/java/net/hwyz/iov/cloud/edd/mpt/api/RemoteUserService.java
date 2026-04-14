@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
  *
  * @author hwyz_leo
  */
-@FeignClient(contextId = "remoteUserService", value = ServiceNameConstants.MPT_SYSTEM, fallbackFactory = RemoteUserFallbackFactory.class)
+@FeignClient(contextId = "remoteUserService", value = ServiceNameConstants.EDD_MPT, fallbackFactory = RemoteUserFallbackFactory.class)
 public interface RemoteUserService {
     /**
      * 通过用户名查询用户信息
