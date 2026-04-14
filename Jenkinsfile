@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = "http://${env.MAVEN_URL}/repository/maven-snapshots/"
+        REPO_URL = "{{http://${env.MAVEN_URL}}}/repository/maven-snapshots/"
         REPO_ID = "snapshots"
         PROJECT_NAME = "${env.JOB_NAME}"
         DIR_API = "${env.DIR_KEY}-api"
@@ -11,7 +11,8 @@ pipeline {
     }
 
     parameters {
-        choice(choices: [true, false], description: '是否发布API', name: 'DEPLOY_API')
+        choice(name: 'DEPLOY_API', choices: ['true', 'false'], description: '是否发布API')
+        booleanParam(name: 'DOCKER_NO_CACHE', defaultValue: false, description: '构建镜像时是否使用 --no-cache')
     }
 
     tools {
@@ -20,7 +21,9 @@ pipeline {
 
     stages {
         stage('构建并发布') {
-            when { expression { params.DEPLOY_API == "true" } }
+            when {
+                expression { params.DEPLOY_API == 'true' }
+            }
             steps {
                 script {
                     dir(DIR_API) {
@@ -32,17 +35,20 @@ pipeline {
                 }
             }
         }
+
         stage('构建镜像') {
             steps {
                 script {
-                    sh '''
+                    def noCacheArg = params.DOCKER_NO_CACHE ? '--no-cache' : ''
+                    sh """
                         echo '============================== 构建镜像 =============================='
                         cp /var/jenkins_home/settings.xml ./${DIR_SERVICE}/settings.xml
-                        docker build --no-cache -t ${IMAGE_NAME} -f ../Dockerfile ./${DIR_SERVICE}/
-                    '''
+                        docker build ${noCacheArg} -t ${IMAGE_NAME} -f ../Dockerfile ./${DIR_SERVICE}/
+                    """
                 }
             }
         }
+
         stage('上传镜像') {
             steps {
                 sh '''
@@ -51,14 +57,15 @@ pipeline {
                 '''
             }
         }
+
         stage('运行镜像') {
             steps {
                 sh '''
                     echo '============================== 运行镜像 =============================='
-                    if [ -n \"\$(docker ps -q -f name=${PROJECT_NAME})" ]; then
+                    if [ -n "$(docker ps -q -f name=${PROJECT_NAME})" ]; then
                         docker stop ${PROJECT_NAME}
                     fi
-                    if [ -n \"\$(docker ps -aq -f name=${PROJECT_NAME})" ]; then
+                    if [ -n "$(docker ps -aq -f name=${PROJECT_NAME})" ]; then
                         docker rm ${PROJECT_NAME}
                     fi
                     docker pull ${IMAGE_NAME}
