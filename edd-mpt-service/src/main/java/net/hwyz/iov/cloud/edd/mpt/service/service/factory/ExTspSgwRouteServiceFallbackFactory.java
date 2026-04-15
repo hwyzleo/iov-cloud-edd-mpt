@@ -34,6 +34,11 @@ public class ExTspSgwRouteServiceFallbackFactory implements FallbackFactory<ExTs
             public void delete(Long[] ids) {
                 logger.error("服务网关删除路由[{}]调用失败", Arrays.toString(ids), throwable);
             }
+
+            @Override
+            public void refresh() {
+                logger.error("服务网关刷新路由调用失败", throwable);
+            }
         };
     }
 }

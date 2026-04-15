@@ -1,17 +1,17 @@
 package net.hwyz.iov.cloud.edd.mpt.service.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
-import net.hwyz.iov.cloud.framework.audit.annotation.Log;
-import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
-import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
-import net.hwyz.iov.cloud.framework.web.controller.BaseController;
-import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
-import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
-import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
-import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.TspSgwRoute;
 import net.hwyz.iov.cloud.edd.mpt.service.service.ExTspSgwRouteService;
 import net.hwyz.iov.cloud.edd.mpt.service.service.ITspSgwRouteService;
+import net.hwyz.iov.cloud.framework.audit.annotation.Log;
+import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
+import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
+import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
+import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
+import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
+import net.hwyz.iov.cloud.framework.web.controller.BaseController;
+import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -93,6 +93,16 @@ public class TspSgwRouteController extends BaseController {
         int result = routeService.deleteRouteByIds(routeIds);
         exTspSgwRouteService.delete(routeIds);
         return toAjax(result);
+    }
+
+    /**
+     * 刷新路由
+     */
+    @RequiresPermissions("tsp:sgw:route:refresh")
+    @PostMapping("/refresh")
+    public AjaxResult refresh() {
+        exTspSgwRouteService.refresh();
+        return success();
     }
 
 }
