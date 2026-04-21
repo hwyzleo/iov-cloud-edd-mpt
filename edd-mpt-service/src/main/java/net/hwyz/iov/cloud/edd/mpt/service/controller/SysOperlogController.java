@@ -6,7 +6,8 @@ import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
 import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
 import net.hwyz.iov.cloud.framework.web.controller.BaseController;
 import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
-import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
+import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
+import net.hwyz.iov.cloud.framework.common.bean.PageResult;
 import net.hwyz.iov.cloud.framework.security.annotation.InnerAuth;
 import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysOperLog;
@@ -29,10 +30,10 @@ public class SysOperlogController extends BaseController {
 
     @RequiresPermissions("system:operlog:list")
     @GetMapping("/list")
-    public TableDataInfo list(SysOperLog operLog) {
+    public ApiResponse<PageResult<SysOperLog>> list(SysOperLog operLog) {
         startPage();
         List<SysOperLog> list = operLogService.selectOperLogList(operLog);
-        return getDataTable(list);
+        return ApiResponse.ok(getPageResult(list));
     }
 
     @Log(title = "操作日志", businessType = BusinessType.EXPORT)

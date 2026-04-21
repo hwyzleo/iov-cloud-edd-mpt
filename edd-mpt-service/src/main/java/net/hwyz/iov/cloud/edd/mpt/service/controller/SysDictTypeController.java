@@ -6,7 +6,8 @@ import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
 import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
 import net.hwyz.iov.cloud.framework.web.controller.BaseController;
 import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
-import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
+import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
+import net.hwyz.iov.cloud.framework.common.bean.PageResult;
 import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
 import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysDictType;
@@ -30,10 +31,10 @@ public class SysDictTypeController extends BaseController {
 
     @RequiresPermissions("system:dict:list")
     @GetMapping("/list")
-    public TableDataInfo list(SysDictType dictType) {
+    public ApiResponse<PageResult<SysDictType>> list(SysDictType dictType) {
         startPage();
         List<SysDictType> list = dictTypeService.selectDictTypeList(dictType);
-        return getDataTable(list);
+        return ApiResponse.ok(getPageResult(list));
     }
 
     @Log(title = "字典类型", businessType = BusinessType.EXPORT)

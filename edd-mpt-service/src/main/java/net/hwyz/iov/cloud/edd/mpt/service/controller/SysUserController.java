@@ -9,7 +9,7 @@ import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
 import net.hwyz.iov.cloud.framework.common.util.StrUtil;
 import net.hwyz.iov.cloud.framework.web.controller.BaseController;
 import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
-import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
+import net.hwyz.iov.cloud.framework.common.bean.PageResult;
 import net.hwyz.iov.cloud.framework.security.annotation.InnerAuth;
 import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
 import net.hwyz.iov.cloud.framework.security.service.TokenService;
@@ -64,10 +64,10 @@ public class SysUserController extends BaseController {
      */
     @RequiresPermissions("system:user:list")
     @GetMapping("/list")
-    public TableDataInfo list(SysUser user) {
+    public ApiResponse<PageResult<SysUser>> list(SysUser user) {
         startPage();
         List<SysUser> list = userService.selectUserList(user);
-        return getDataTable(list);
+        return ApiResponse.ok(getPageResult(list));
     }
 
     @Log(title = "用户管理", businessType = BusinessType.EXPORT)

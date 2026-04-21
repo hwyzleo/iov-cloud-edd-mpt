@@ -6,7 +6,8 @@ import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
 import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
 import net.hwyz.iov.cloud.framework.web.controller.BaseController;
 import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
-import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
+import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
+import net.hwyz.iov.cloud.framework.common.bean.PageResult;
 import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
 import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
 import net.hwyz.iov.cloud.edd.mpt.service.domain.SysPost;
@@ -33,10 +34,10 @@ public class SysPostController extends BaseController {
      */
     @RequiresPermissions("system:post:list")
     @GetMapping("/list")
-    public TableDataInfo list(SysPost post) {
+    public ApiResponse<PageResult<SysPost>> list(SysPost post) {
         startPage();
         List<SysPost> list = postService.selectPostList(post);
-        return getDataTable(list);
+        return ApiResponse.ok(getPageResult(list));
     }
 
     @Log(title = "岗位管理", businessType = BusinessType.EXPORT)

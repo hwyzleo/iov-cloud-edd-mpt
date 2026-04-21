@@ -7,11 +7,12 @@ import net.hwyz.iov.cloud.edd.mpt.service.service.ITspSgwRouteService;
 import net.hwyz.iov.cloud.framework.audit.annotation.Log;
 import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
 import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
+import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
+import net.hwyz.iov.cloud.framework.common.bean.PageResult;
 import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
 import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
 import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
 import net.hwyz.iov.cloud.framework.web.controller.BaseController;
-import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,10 +34,10 @@ public class TspSgwRouteController extends BaseController {
 
     @RequiresPermissions("tsp:sgw:route:list")
     @GetMapping("/list")
-    public TableDataInfo list(TspSgwRoute route) {
+    public ApiResponse<PageResult<TspSgwRoute>> list(TspSgwRoute route) {
         startPage();
         List<TspSgwRoute> list = routeService.selectRouteList(route);
-        return getDataTable(list);
+        return ApiResponse.ok(getPageResult(list));
     }
 
     @Log(title = "TSP服务网关路由管理", businessType = BusinessType.EXPORT)

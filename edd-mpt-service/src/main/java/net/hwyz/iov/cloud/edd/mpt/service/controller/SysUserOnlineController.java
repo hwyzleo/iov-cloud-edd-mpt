@@ -6,7 +6,8 @@ import net.hwyz.iov.cloud.framework.common.constant.CacheConstants;
 import net.hwyz.iov.cloud.framework.common.util.StrUtil;
 import net.hwyz.iov.cloud.framework.web.controller.BaseController;
 import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
-import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
+import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
+import net.hwyz.iov.cloud.framework.common.bean.PageResult;
 import net.hwyz.iov.cloud.framework.redis.service.RedisService;
 import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
 import net.hwyz.iov.cloud.edd.mpt.api.model.LoginUser;
@@ -36,7 +37,7 @@ public class SysUserOnlineController extends BaseController {
 
     @RequiresPermissions("monitor:online:list")
     @GetMapping("/list")
-    public TableDataInfo list(String ipaddr, String userName) {
+    public ApiResponse<PageResult<SysUserOnline>> list(String ipaddr, String userName) {
         Collection<String> keys = redisService.keys(CacheConstants.LOGIN_TOKEN_KEY + "*");
         List<SysUserOnline> userOnlineList = new ArrayList<SysUserOnline>();
         for (String key : keys) {
@@ -53,7 +54,7 @@ public class SysUserOnlineController extends BaseController {
         }
         Collections.reverse(userOnlineList);
         userOnlineList.removeAll(Collections.singleton(null));
-        return getDataTable(userOnlineList);
+        return ApiResponse.ok(getPageResult(userOnlineList));
     }
 
     /**

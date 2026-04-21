@@ -6,7 +6,8 @@ import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
 import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
 import net.hwyz.iov.cloud.framework.web.controller.BaseController;
 import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
-import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
+import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
+import net.hwyz.iov.cloud.framework.common.bean.PageResult;
 import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
 import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysDept;
@@ -41,10 +42,10 @@ public class SysRoleController extends BaseController {
 
     @RequiresPermissions("system:role:list")
     @GetMapping("/list")
-    public TableDataInfo list(SysRole role) {
+    public ApiResponse<PageResult<SysRole>> list(SysRole role) {
         startPage();
         List<SysRole> list = roleService.selectRoleList(role);
-        return getDataTable(list);
+        return ApiResponse.ok(getPageResult(list));
     }
 
     @Log(title = "角色管理", businessType = BusinessType.EXPORT)
@@ -150,10 +151,10 @@ public class SysRoleController extends BaseController {
      */
     @RequiresPermissions("system:role:list")
     @GetMapping("/authUser/allocatedList")
-    public TableDataInfo allocatedList(SysUser user) {
+    public ApiResponse<PageResult<SysUser>> allocatedList(SysUser user) {
         startPage();
         List<SysUser> list = userService.selectAllocatedList(user);
-        return getDataTable(list);
+        return ApiResponse.ok(getPageResult(list));
     }
 
     /**
@@ -161,10 +162,10 @@ public class SysRoleController extends BaseController {
      */
     @RequiresPermissions("system:role:list")
     @GetMapping("/authUser/unallocatedList")
-    public TableDataInfo unallocatedList(SysUser user) {
+    public ApiResponse<PageResult<SysUser>> unallocatedList(SysUser user) {
         startPage();
         List<SysUser> list = userService.selectUnallocatedList(user);
-        return getDataTable(list);
+        return ApiResponse.ok(getPageResult(list));
     }
 
     /**

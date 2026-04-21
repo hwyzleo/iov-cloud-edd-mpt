@@ -7,7 +7,8 @@ import net.hwyz.iov.cloud.framework.common.constant.CacheConstants;
 import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
 import net.hwyz.iov.cloud.framework.web.controller.BaseController;
 import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
-import net.hwyz.iov.cloud.framework.web.page.TableDataInfo;
+import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
+import net.hwyz.iov.cloud.framework.common.bean.PageResult;
 import net.hwyz.iov.cloud.framework.redis.service.RedisService;
 import net.hwyz.iov.cloud.framework.security.annotation.InnerAuth;
 import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
@@ -34,10 +35,10 @@ public class SysLogininforController extends BaseController {
 
     @RequiresPermissions("system:logininfor:list")
     @GetMapping("/list")
-    public TableDataInfo list(SysLogininfor logininfor) {
+    public ApiResponse<PageResult<SysLogininfor>> list(SysLogininfor logininfor) {
         startPage();
         List<SysLogininfor> list = logininforService.selectLogininforList(logininfor);
-        return getDataTable(list);
+        return ApiResponse.ok(getPageResult(list));
     }
 
     @Log(title = "登录日志", businessType = BusinessType.EXPORT)
