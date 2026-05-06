@@ -6,7 +6,6 @@ import net.hwyz.iov.cloud.edd.mpt.service.service.ExTspSgwRouteService;
 import net.hwyz.iov.cloud.edd.mpt.service.service.ITspSgwRouteService;
 import net.hwyz.iov.cloud.framework.audit.annotation.Log;
 import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
-import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
 import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
 import net.hwyz.iov.cloud.framework.common.bean.PageResult;
 import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
@@ -20,19 +19,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * TSP服务网关路由信息
+ * 企业数字底座服务网关路由信息
  *
  * @author hwyz_leo
  */
 @RestController
-@RequestMapping("/tsp-sgw-route")
-public class TspSgwRouteController extends BaseController {
+@RequestMapping("/sgw-route")
+public class SgwRouteController extends BaseController {
     @Autowired
     private ITspSgwRouteService routeService;
     @Autowired
     private ExTspSgwRouteService exTspSgwRouteService;
 
-    @RequiresPermissions("tsp:sgw:route:list")
+    @RequiresPermissions("edd:sgw:route:list")
     @GetMapping("/list")
     public ApiResponse<PageResult<TspSgwRoute>> list(TspSgwRoute route) {
         startPage();
@@ -40,70 +39,71 @@ public class TspSgwRouteController extends BaseController {
         return ApiResponse.ok(getPageResult(list));
     }
 
-    @Log(title = "TSP服务网关路由管理", businessType = BusinessType.EXPORT)
-    @RequiresPermissions("tsp:sgw:route:export")
+    @Log(title = "服务网关路由管理", businessType = BusinessType.EXPORT)
+    @RequiresPermissions("edd:sgw:route:export")
     @PostMapping("/export")
-    public void export(HttpServletResponse response, TspSgwRoute route) {
+    public ApiResponse<Void> export(HttpServletResponse response, TspSgwRoute route) {
         List<TspSgwRoute> list = routeService.selectRouteList(route);
         ExcelUtil<TspSgwRoute> util = new ExcelUtil<>(TspSgwRoute.class);
         util.exportExcel(response, list, "TSP服务网关路由数据");
+        return ApiResponse.ok();
     }
 
     /**
      * 根据路由ID获取详细信息
      */
-    @RequiresPermissions("tsp:sgw:route:query")
+    @RequiresPermissions("edd:sgw:route:query")
     @GetMapping(value = "/{routeId}")
-    public AjaxResult getInfo(@PathVariable Long routeId) {
-        return success(routeService.selectRouteById(routeId));
+    public ApiResponse<TspSgwRoute> getInfo(@PathVariable Long routeId) {
+        return ApiResponse.ok(routeService.selectRouteById(routeId));
     }
 
     /**
      * 新增路由
      */
-    @RequiresPermissions("tsp:sgw:route:add")
-    @Log(title = "TSP服务网关路由管理", businessType = BusinessType.INSERT)
+    @RequiresPermissions("edd:sgw:route:add")
+    @Log(title = "服务网关路由管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@Validated @RequestBody TspSgwRoute route) {
+    public ApiResponse<Integer> add(@Validated @RequestBody TspSgwRoute route) {
         route.setCreateBy(SecurityUtils.getUserId().toString());
         int result = routeService.insertRoute(route);
         exTspSgwRouteService.add(route);
-        return toAjax(result);
+        return ApiResponse.ok(result);
     }
 
     /**
      * 修改保存路由
      */
-    @RequiresPermissions("tsp:sgw:route:edit")
-    @Log(title = "TSP服务网关路由管理", businessType = BusinessType.UPDATE)
+    @RequiresPermissions("edd:sgw:route:edit")
+    @Log(title = "服务网关路由管理", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@Validated @RequestBody TspSgwRoute route) {
+    public ApiResponse<Integer> edit(@Validated @RequestBody TspSgwRoute route) {
         route.setModifyBy(SecurityUtils.getUserId().toString());
         int result = routeService.updateRoute(route);
         exTspSgwRouteService.update(route);
-        return toAjax(result);
+        return ApiResponse.ok(result);
     }
 
     /**
      * 删除路由
      */
-    @RequiresPermissions("tsp:sgw:route:remove")
-    @Log(title = "TSP服务网关路由管理", businessType = BusinessType.DELETE)
+    @RequiresPermissions("edd:sgw:route:remove")
+    @Log(title = "服务网关路由管理", businessType = BusinessType.DELETE)
     @DeleteMapping("/{routeIds}")
-    public AjaxResult remove(@PathVariable Long[] routeIds) {
+    public ApiResponse<Integer> remove(@PathVariable Long[] routeIds) {
         int result = routeService.deleteRouteByIds(routeIds);
         exTspSgwRouteService.delete(routeIds);
-        return toAjax(result);
+        return ApiResponse.ok(result);
     }
 
     /**
      * 刷新路由
      */
-    @RequiresPermissions("tsp:sgw:route:refresh")
+    @RequiresPermissions("edd:sgw:route:refresh")
     @PostMapping("/refresh")
-    public AjaxResult refresh() {
+    public ApiResponse<Void> refresh() {
         exTspSgwRouteService.refresh();
-        return success();
+        return ApiResponse.ok();
     }
 
 }
