@@ -57,10 +57,10 @@ pipeline {
             steps {
                 sh '''
                     echo '============================== 运行镜像 =============================='
-                    if [ -n \"\$(docker ps -q -f name=${PROJECT_NAME})" ]; then
+                    if [ -n \"\$(docker ps -q -f "name=^/${PROJECT_NAME}$")" ]; then
                         docker stop ${PROJECT_NAME}
                     fi
-                    if [ -n \"\$(docker ps -aq -f name=${PROJECT_NAME})" ]; then
+                    if [ -n \"\$(docker ps -aq -f "name=^/${PROJECT_NAME}$")" ]; then
                         docker rm ${PROJECT_NAME}
                     fi
                     docker pull ${IMAGE_NAME}
