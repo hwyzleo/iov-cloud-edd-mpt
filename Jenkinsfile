@@ -65,8 +65,26 @@ pipeline {
                     fi
                     docker pull ${IMAGE_NAME}
                     docker run -d --name ${PROJECT_NAME} --network appnet ${IMAGE_NAME}
-                    sleep 10
-                    docker logs ${PROJECT_NAME}
+
+                    echo "正在等待服务启动..."
+                    # 循环检查日志，持续 60 秒
+                    SUCCESS=0
+                    for i in {1..12}; do
+                        # 检查日志中是否包含成功关键字
+                        if docker logs ${PROJECT_NAME} 2>&1 | grep -q "Started .* in .* seconds"; then
+                            echo "检测到启动成功标识！"
+                            SUCCESS=1
+                            break
+                        fi
+                        echo "服务启动中... (${i}/12)"
+                        sleep 5
+                    done
+
+                    if [ $SUCCESS -eq 0 ]; then
+                        echo "错误：服务在规定时间内未启动成功，最近日志如下："
+                        docker logs ${PROJECT_NAME} --tail 50
+                        exit 1
+                    fi
                 '''
             }
         }
