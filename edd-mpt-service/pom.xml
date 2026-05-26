@@ -23,19 +23,6 @@
         <dependency>
             <groupId>net.hwyz.iov.cloud.edd</groupId>
             <artifactId>edd-mpt-api</artifactId>
-            <version>${edd-mpt.version}</version>
-        </dependency>
-
-        <!-- 框架：安全 -->
-        <dependency>
-            <groupId>net.hwyz.iov.cloud.framework</groupId>
-            <artifactId>framework-security-starter</artifactId>
-        </dependency>
-
-        <!-- 框架：审计 -->
-        <dependency>
-            <groupId>net.hwyz.iov.cloud.framework</groupId>
-            <artifactId>framework-audit-starter</artifactId>
         </dependency>
 
         <!-- 框架：数据权限范围 -->

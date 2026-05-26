@@ -5,13 +5,18 @@ spring:
     nacos:
       discovery:
         server-addr: ${NACOS_URL:127.0.0.1:8848}
-        namespace: 32c13f29-1aa6-468a-bacb-81be7f437dc9
+        namespace: ${NACOS_NAMESPACE:32c13f29-1aa6-468a-bacb-81be7f437dc9}
       config:
         server-addr: ${NACOS_URL:127.0.0.1:8848}
-        namespace: 32c13f29-1aa6-468a-bacb-81be7f437dc9
+        namespace: ${NACOS_NAMESPACE:32c13f29-1aa6-468a-bacb-81be7f437dc9}
         name: edd-mpt
         file-extension: yaml
         shared-configs:
           - application.yaml
           - mysql.yaml
           - redis.yaml
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    encoding: UTF-8
