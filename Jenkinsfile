@@ -40,9 +40,9 @@ pipeline {
                     def noCacheArg = params.DOCKER_NO_CACHE == "true" ? "--no-cache" : ""
                     sh """
                         echo '============================== 构建镜像 =============================='
-                        cp /var/jenkins_home/.m2/settings.xml ./${DIR_SERVICE}/settings.xml
-                        cp /var/jenkins_home/apache-maven-3.6.3-bin.tar.gz ./${DIR_SERVICE}/
-                        docker build --network appnet ${noCacheArg} -t ${IMAGE_NAME} -f ../Dockerfile ./${DIR_SERVICE}/
+                        cp ./.m2/settings.xml ./${DIR_SERVICE}/settings.xml
+                        cp ./apache-maven-3.6.3-bin.tar.gz ./${DIR_SERVICE}/
+                        docker build --network openiov-management ${noCacheArg} -t ${IMAGE_NAME} -f ./Dockerfile ./${DIR_SERVICE}/
                     """
                 }
             }
