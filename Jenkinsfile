@@ -4,7 +4,7 @@ pipeline {
     environment {
         REPO_URL = "http://${env.MAVEN_URL}/repository/maven-snapshots/"
         REPO_ID = "snapshots"
-        PROJECT_NAME = "${env.JOB_NAME}"
+        PROJECT_NAME = "${env.JOB_BASE_NAME}"
         DIR_API = "${env.DIR_KEY}-api"
         DIR_SERVICE = "${env.DIR_KEY}-service"
         IMAGE_NAME = "${env.REGISTRY_URL}/${PROJECT_NAME}:${env.BUILD_NUMBER}"
