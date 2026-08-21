@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'java17' }
 
     environment {
         REPO_URL = "http://${env.MAVEN_URL}/repository/maven-snapshots/"
@@ -16,6 +16,7 @@ pipeline {
     }
 
     tools {
+        jdk   'temurin-17'
         maven 'M3'
     }
 
