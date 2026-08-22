@@ -213,10 +213,10 @@ pipeline {
 
                         deployment_failed() {
                             echo '============================== 部署失败 =============================='
-                            echo '新容器最后 100 行日志：'
+                            echo '新容器最后 500 行日志：'
 
                             docker logs \
-                                --tail 100 \
+                                --tail 500 \
                                 "${PROJECT_NAME}" 2>&1 || true
 
                             rollback
