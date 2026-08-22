@@ -269,6 +269,7 @@ pipeline {
                             --name "${PROJECT_NAME}" \
                             --network openiov-management \
                             --restart unless-stopped \
+                            --env-file /var/jenkins_home/nacos.env \
                             "${IMAGE_NAME}"; then
 
                             echo '新容器创建失败。'
