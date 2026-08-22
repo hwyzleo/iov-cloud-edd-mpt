@@ -46,6 +46,11 @@ pipeline {
         )
     }
 
+    tools {
+        jdk   'temurin-17'
+        maven 'M3'
+    }
+
     stages {
         stage('环境检查') {
             steps {
