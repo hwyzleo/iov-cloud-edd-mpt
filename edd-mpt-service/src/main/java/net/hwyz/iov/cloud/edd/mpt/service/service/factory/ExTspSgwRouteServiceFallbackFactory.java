@@ -22,22 +22,22 @@ public class ExTspSgwRouteServiceFallbackFactory implements FallbackFactory<ExTs
         return new ExTspSgwRouteService() {
             @Override
             public void add(TspSgwRoute route) {
-                logger.error("服务网关新增路由[{}]调用失败", route.getTargetUri(), throwable);
+                log.error("服务网关新增路由[{}]调用失败", route.getTargetUri(), throwable);
             }
 
             @Override
             public void update(TspSgwRoute route) {
-                logger.error("服务网关更新路由[{}]调用失败", route.getTargetUri(), throwable);
+                log.error("服务网关更新路由[{}]调用失败", route.getTargetUri(), throwable);
             }
 
             @Override
             public void delete(Long[] ids) {
-                logger.error("服务网关删除路由[{}]调用失败", Arrays.toString(ids), throwable);
+                log.error("服务网关删除路由[{}]调用失败", Arrays.toString(ids), throwable);
             }
 
             @Override
             public void refresh() {
-                logger.error("服务网关刷新路由调用失败", throwable);
+                log.error("服务网关刷新路由调用失败", throwable);
             }
         };
     }

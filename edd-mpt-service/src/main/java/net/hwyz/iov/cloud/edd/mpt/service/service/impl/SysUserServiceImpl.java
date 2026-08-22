@@ -3,6 +3,7 @@ package net.hwyz.iov.cloud.edd.mpt.service.service.impl;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.ObjUtil;
 import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 import net.hwyz.iov.cloud.framework.common.exception.ServiceException;
 import net.hwyz.iov.cloud.framework.common.util.BeanValidators;
 import net.hwyz.iov.cloud.framework.web.util.SpringUtil;
@@ -19,8 +20,6 @@ import net.hwyz.iov.cloud.edd.mpt.service.mapper.*;
 import net.hwyz.iov.cloud.edd.mpt.service.service.ISysConfigService;
 import net.hwyz.iov.cloud.edd.mpt.service.service.ISysDeptService;
 import net.hwyz.iov.cloud.edd.mpt.service.service.ISysUserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,9 +34,9 @@ import java.util.stream.Collectors;
  *
  * @author hwyz_leo
  */
+@Slf4j
 @Service
 public class SysUserServiceImpl implements ISysUserService {
-    private static final Logger log = LoggerFactory.getLogger(SysUserServiceImpl.class);
 
     @Autowired
     private SysUserMapper userMapper;

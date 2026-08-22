@@ -1,11 +1,10 @@
 package net.hwyz.iov.cloud.edd.mpt.api.factory;
 
+import lombok.extern.slf4j.Slf4j;
 import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
 import net.hwyz.iov.cloud.edd.mpt.api.RemoteLogService;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysLogininfor;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysOperLog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.stereotype.Component;
 
@@ -14,9 +13,9 @@ import org.springframework.stereotype.Component;
  *
  * @author hwyz_leo
  */
+@Slf4j
 @Component
 public class RemoteLogFallbackFactory implements FallbackFactory<RemoteLogService> {
-    private static final Logger log = LoggerFactory.getLogger(RemoteLogFallbackFactory.class);
 
     @Override
     public RemoteLogService create(Throwable throwable) {

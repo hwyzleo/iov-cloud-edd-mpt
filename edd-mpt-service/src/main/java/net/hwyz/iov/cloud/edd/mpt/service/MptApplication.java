@@ -19,6 +19,6 @@ public class MptApplication {
     public static void main(String[] args) {
         System.setProperty("nacos.logging.default.config.enabled", "false");
         SpringApplication.run(net.hwyz.iov.cloud.edd.mpt.service.MptApplication.class, args);
-        logger.info("应用启动成功");
+        log.info("应用启动成功");
     }
 }
