@@ -49,10 +49,26 @@ pipeline {
         }
         stage('上传镜像') {
             steps {
-                sh '''
-                    echo '============================== 上传镜像 =============================='
-                    docker push ${IMAGE_NAME}
-                '''
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'tencent-tcr',
+                        usernameVariable: 'TCR_USERNAME',
+                        passwordVariable: 'TCR_PASSWORD'
+                    )
+                ]) {
+                    sh '''
+                        echo '============================== 登录腾讯云 TCR =============================='
+                        echo "${TCR_PASSWORD}" | docker login \
+                            --username "${TCR_USERNAME}" \
+                            --password-stdin \
+                            ccr.ccs.tencentyun.com
+
+                        echo '============================== 上传镜像 =============================='
+                        docker push "${IMAGE_NAME}"
+
+                        docker logout ccr.ccs.tencentyun.com
+                    '''
+                }
             }
         }
         stage('运行镜像') {
