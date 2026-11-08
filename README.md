@@ -51,6 +51,15 @@ MPT 调用服务网关时由 `SgwFeignSignatureInterceptor` 自动追加：
 | `mpt.sgw.internal.client-id` | `SGW_INTERNAL_CLIENT` | 内部客户端ID |
 | `mpt.sgw.internal.secret` | `SGW_INTERNAL_SECRET` | HMAC 密钥，必须与服务网关一致 |
 
+启用签名（`enabled=true`）但未配置 `secret` 时，应用会在**启动阶段直接失败**并给出明确提示，
+不再等到访问“服务网关”菜单才抛 `IllegalStateException`。生成强密钥：
+
+```bash
+openssl rand -hex 32
+```
+
+生成的密钥需同时配置到 `edd-mpt` 与 `edd-sgw`（`sgw.security.internal.clients.mpt`）两侧。
+
 ### 发布交互
 
 1. `GET /sgw/config-versions/workspace` 获取 `draftRevision`
