@@ -1,2 +1,10 @@
 mybatis-plus:
   type-aliases-package: net.hwyz.iov.cloud.edd.mpt
+
+# 服务网关内部请求签名（EDD-SGW-DSN-CR-001）
+mpt:
+  sgw:
+    internal:
+      enabled: true
+      client-id: ${SGW_INTERNAL_CLIENT:mpt}
+      secret: ${SGW_INTERNAL_SECRET:}

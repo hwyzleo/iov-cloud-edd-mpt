@@ -25,6 +25,13 @@
             <artifactId>edd-mpt-api</artifactId>
         </dependency>
 
+        <!-- 服务网关管理契约（EDD-SGW-DSN-CR-001：SGW 为配置唯一属主） -->
+        <dependency>
+            <groupId>net.hwyz.iov.cloud.edd</groupId>
+            <artifactId>edd-sgw-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
         <!-- 框架：数据权限范围 -->
         <dependency>
             <groupId>net.hwyz.iov.cloud.framework</groupId>
@@ -56,5 +63,25 @@
             <artifactId>jakarta.xml.bind-api</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*IT.java</include>
+                    </includes>
+                    <argLine>-Duser.timezone=UTC</argLine>
+                    <environmentVariables>
+                        <TZ>UTC</TZ>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

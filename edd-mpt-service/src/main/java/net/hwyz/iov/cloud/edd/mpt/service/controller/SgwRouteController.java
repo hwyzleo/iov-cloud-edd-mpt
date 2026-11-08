@@ -1,109 +1,140 @@
 package net.hwyz.iov.cloud.edd.mpt.service.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
-import net.hwyz.iov.cloud.edd.mpt.api.domain.TspSgwRoute;
-import net.hwyz.iov.cloud.edd.mpt.service.service.ExTspSgwRouteService;
-import net.hwyz.iov.cloud.edd.mpt.service.service.ITspSgwRouteService;
+import net.hwyz.iov.cloud.edd.sgw.api.service.SgwRouteAdminService;
+import net.hwyz.iov.cloud.edd.sgw.api.vo.request.CopyRequest;
+import net.hwyz.iov.cloud.edd.sgw.api.vo.request.RouteSaveRequest;
+import net.hwyz.iov.cloud.edd.sgw.api.vo.response.RouteResponse;
+import net.hwyz.iov.cloud.edd.sgw.api.vo.response.ValidationResultVo;
 import net.hwyz.iov.cloud.framework.audit.annotation.Log;
 import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
 import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
 import net.hwyz.iov.cloud.framework.common.bean.PageResult;
-import net.hwyz.iov.cloud.framework.common.util.ExcelUtil;
 import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
-import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
-import net.hwyz.iov.cloud.framework.web.controller.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 企业数字底座服务网关路由信息
+ * 服务网关路由管理（MPT 管理端）。
+ * <p>
+ * 配置唯一属主为服务网关，本控制器仅做权限校验、操作审计与请求转发。
  *
  * @author hwyz_leo
  */
 @RestController
-@RequestMapping("/sgw-route")
-public class SgwRouteController extends BaseController {
-    @Autowired
-    private ITspSgwRouteService routeService;
-    @Autowired
-    private ExTspSgwRouteService exTspSgwRouteService;
+@RequestMapping("/sgw/routes")
+public class SgwRouteController {
 
+    private final SgwRouteAdminService routeAdminService;
+
+    public SgwRouteController(SgwRouteAdminService routeAdminService) {
+        this.routeAdminService = routeAdminService;
+    }
+
+    /**
+     * 物理分页查询路由草稿
+     *
+     * @param page       页码
+     * @param size       每页条数
+     * @param name       名称模糊匹配
+     * @param enabled    启用状态
+     * @param target     目标
+     * @param clientType 客户端类型
+     * @return 分页结果
+     */
     @RequiresPermissions("edd:sgw:route:list")
     @GetMapping("/list")
-    public ApiResponse<PageResult<TspSgwRoute>> list(TspSgwRoute route) {
-        startPage();
-        List<TspSgwRoute> list = routeService.selectRouteList(route);
-        return ApiResponse.ok(getPageResult(list));
-    }
-
-    @Log(title = "服务网关路由管理", businessType = BusinessType.EXPORT)
-    @RequiresPermissions("edd:sgw:route:export")
-    @PostMapping("/export")
-    public ApiResponse<Void> export(HttpServletResponse response, TspSgwRoute route) {
-        List<TspSgwRoute> list = routeService.selectRouteList(route);
-        ExcelUtil<TspSgwRoute> util = new ExcelUtil<>(TspSgwRoute.class);
-        util.exportExcel(response, list, "TSP服务网关路由数据");
-        return ApiResponse.ok();
+    public ApiResponse<PageResult<RouteResponse>> list(@RequestParam(defaultValue = "1") int page,
+                                                        @RequestParam(defaultValue = "20") int size,
+                                                        @RequestParam(required = false) String name,
+                                                        @RequestParam(required = false) Boolean enabled,
+                                                        @RequestParam(required = false) String target,
+                                                        @RequestParam(required = false) String clientType) {
+        return routeAdminService.page(page, size, name, enabled, target, clientType);
     }
 
     /**
-     * 根据路由ID获取详细信息
+     * 查询路由详情
+     *
+     * @param routeCode 路由编码
+     * @return 路由详情
      */
     @RequiresPermissions("edd:sgw:route:query")
-    @GetMapping(value = "/{routeId}")
-    public ApiResponse<TspSgwRoute> getInfo(@PathVariable Long routeId) {
-        return ApiResponse.ok(routeService.selectRouteById(routeId));
+    @GetMapping("/{routeCode}")
+    public ApiResponse<RouteResponse> get(@PathVariable String routeCode) {
+        return routeAdminService.get(routeCode);
     }
 
     /**
-     * 新增路由
+     * 新增路由草稿
+     *
+     * @param request 请求
+     * @return 路由详情
      */
     @RequiresPermissions("edd:sgw:route:add")
     @Log(title = "服务网关路由管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public ApiResponse<Integer> add(@Validated @RequestBody TspSgwRoute route) {
-        route.setCreateBy(SecurityUtils.getUserId().toString());
-        int result = routeService.insertRoute(route);
-        exTspSgwRouteService.add(route);
-        return ApiResponse.ok(result);
+    public ApiResponse<RouteResponse> add(@RequestBody RouteSaveRequest request) {
+        return routeAdminService.create(request);
     }
 
     /**
-     * 修改保存路由
+     * 更新路由草稿
+     *
+     * @param routeCode 路由编码
+     * @param request   请求
+     * @return 路由详情
      */
     @RequiresPermissions("edd:sgw:route:edit")
     @Log(title = "服务网关路由管理", businessType = BusinessType.UPDATE)
-    @PutMapping
-    public ApiResponse<Integer> edit(@Validated @RequestBody TspSgwRoute route) {
-        route.setModifyBy(SecurityUtils.getUserId().toString());
-        int result = routeService.updateRoute(route);
-        exTspSgwRouteService.update(route);
-        return ApiResponse.ok(result);
+    @PutMapping("/{routeCode}")
+    public ApiResponse<RouteResponse> edit(@PathVariable String routeCode, @RequestBody RouteSaveRequest request) {
+        return routeAdminService.update(routeCode, request);
     }
 
     /**
-     * 删除路由
+     * 复制路由草稿
+     *
+     * @param routeCode 源路由编码
+     * @param request   复制请求
+     * @return 新路由详情
+     */
+    @RequiresPermissions("edd:sgw:route:add")
+    @Log(title = "服务网关路由管理", businessType = BusinessType.INSERT)
+    @PostMapping("/{routeCode}/copy")
+    public ApiResponse<RouteResponse> copy(@PathVariable String routeCode, @RequestBody CopyRequest request) {
+        return routeAdminService.copy(routeCode, request);
+    }
+
+    /**
+     * 逻辑删除路由草稿
+     *
+     * @param routeCode 路由编码
+     * @return 空响应
      */
     @RequiresPermissions("edd:sgw:route:remove")
     @Log(title = "服务网关路由管理", businessType = BusinessType.DELETE)
-    @DeleteMapping("/{routeIds}")
-    public ApiResponse<Integer> remove(@PathVariable Long[] routeIds) {
-        int result = routeService.deleteRouteByIds(routeIds);
-        exTspSgwRouteService.delete(routeIds);
-        return ApiResponse.ok(result);
+    @DeleteMapping("/{routeCode}")
+    public ApiResponse<Void> remove(@PathVariable String routeCode) {
+        return routeAdminService.delete(routeCode);
     }
 
     /**
-     * 刷新路由
+     * 校验路由配置
+     *
+     * @param request 请求
+     * @return 校验结果
      */
-    @RequiresPermissions("edd:sgw:route:refresh")
-    @PostMapping("/refresh")
-    public ApiResponse<Void> refresh() {
-        exTspSgwRouteService.refresh();
-        return ApiResponse.ok();
+    @RequiresPermissions("edd:sgw:route:query")
+    @PostMapping("/validate")
+    public ApiResponse<ValidationResultVo> validate(@RequestBody RouteSaveRequest request) {
+        return routeAdminService.validate(request);
     }
 
 }
