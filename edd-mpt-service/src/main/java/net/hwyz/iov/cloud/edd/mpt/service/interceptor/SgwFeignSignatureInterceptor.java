@@ -61,7 +61,14 @@ public class SgwFeignSignatureInterceptor implements RequestInterceptor {
         String nonce = UUID.randomUUID().toString();
         String body = bodyText(template);
         String path = rawPath(template);
-        String signature = sign(secret, template.method(), path, body, timestamp, nonce, clientId);
+        String canonical = canonical(template.method(), path, body, timestamp, nonce, clientId);
+        String signature = hmacSha256Hex(secret, canonical);
+        if (log.isInfoEnabled()) {
+            log.info("服务网关内部签名(调用方): client={}, method={}, path={}, bodyHash={}, timestamp={}, nonce={},\n"
+                            + "  计算签名={}, \n  密钥指纹={},\n  签名串=[{}]",
+                    clientId, template.method(), path, sha256(body), timestamp, nonce, signature,
+                    fingerprint(secret), canonical.replace("\n", "|"));
+        }
 
         putHeader(template, HEADER_CLIENT, clientId);
         putHeader(template, HEADER_TIMESTAMP, timestamp);
@@ -87,12 +94,38 @@ public class SgwFeignSignatureInterceptor implements RequestInterceptor {
      */
     public static String sign(String secret, String method, String path, String body,
                               String timestamp, String nonce, String clientId) {
-        String canonical = method + "\n"
+        return hmacSha256Hex(secret, canonical(method, path, body, timestamp, nonce, clientId));
+    }
+
+    /**
+     * 构造签名串（必须与服务网关 InternalHmacVerifier 完全一致）
+     *
+     * @param method    HTTP 方法
+     * @param path      请求路径（不含查询参数）
+     * @param body      请求体文本
+     * @param timestamp 时间戳
+     * @param nonce     随机串
+     * @param clientId  内部客户端ID
+     * @return 签名串
+     */
+    public static String canonical(String method, String path, String body,
+                                   String timestamp, String nonce, String clientId) {
+        return method + "\n"
                 + path + "\n"
                 + sha256(body) + "\n"
                 + timestamp + "\n"
                 + nonce + "\n"
                 + clientId;
+    }
+
+    /**
+     * HMAC-SHA256
+     *
+     * @param secret    密钥
+     * @param canonical 签名串
+     * @return 小写十六进制签名
+     */
+    public static String hmacSha256Hex(String secret, String canonical) {
         try {
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
@@ -100,6 +133,21 @@ public class SgwFeignSignatureInterceptor implements RequestInterceptor {
         } catch (Exception e) {
             throw new IllegalStateException("服务网关内部签名计算失败", e);
         }
+    }
+
+    /**
+     * 密钥指纹（SHA-256 前 8 位十六进制）。
+     * <p>
+     * 仅用于两端比对密钥是否一致，不泄露密钥本身；排查完成后建议移除相关日志。
+     *
+     * @param secret 密钥
+     * @return 指纹
+     */
+    public static String fingerprint(String secret) {
+        if (secret == null || secret.isBlank()) {
+            return "-empty-";
+        }
+        return sha256(secret).substring(0, 8);
     }
 
     /**
