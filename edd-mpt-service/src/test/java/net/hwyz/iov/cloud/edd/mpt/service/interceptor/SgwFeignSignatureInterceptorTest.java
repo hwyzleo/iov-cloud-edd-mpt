@@ -3,6 +3,7 @@ package net.hwyz.iov.cloud.edd.mpt.service.interceptor;
 import feign.RequestTemplate;
 import feign.Target;
 import net.hwyz.iov.cloud.edd.mpt.service.config.SgwInternalProperties;
+import net.hwyz.iov.cloud.edd.sgw.api.service.SgwPolicyAdminService;
 import net.hwyz.iov.cloud.edd.sgw.api.service.SgwRouteAdminService;
 import net.hwyz.iov.cloud.framework.common.constant.ServiceNameConstants;
 import org.junit.jupiter.api.DisplayName;
@@ -59,6 +60,25 @@ class SgwFeignSignatureInterceptorTest {
         String timestamp = header(template, SgwFeignSignatureInterceptor.HEADER_TIMESTAMP);
         String nonce = header(template, SgwFeignSignatureInterceptor.HEADER_NONCE);
         String expected = hmacSha256(SECRET, "GET\n/api/service/sgw/v1/workspace\n"
+                + sha256("") + "\n" + timestamp + "\n" + nonce + "\nmpt");
+        assertThat(header(template, SgwFeignSignatureInterceptor.HEADER_SIGNATURE)).isEqualTo(expected);
+    }
+
+    @Test
+    @DisplayName("签名路径须补全 @FeignClient 的 path 前缀（真实 Feign 调用形态）")
+    void signPathIncludesFeignClientPathPrefix() throws Exception {
+        SgwFeignSignatureInterceptor interceptor = new SgwFeignSignatureInterceptor(properties(SECRET, true));
+        RequestTemplate template = new RequestTemplate();
+        template.method("GET");
+        template.uri("/policies/auth");
+        template.feignTarget(new Target.HardCodedTarget<>(SgwPolicyAdminService.class,
+                ServiceNameConstants.EDD_SGW, "http://" + ServiceNameConstants.EDD_SGW));
+
+        interceptor.apply(template);
+
+        String timestamp = header(template, SgwFeignSignatureInterceptor.HEADER_TIMESTAMP);
+        String nonce = header(template, SgwFeignSignatureInterceptor.HEADER_NONCE);
+        String expected = hmacSha256(SECRET, "GET\n/api/service/sgw/v1/policies/auth\n"
                 + sha256("") + "\n" + timestamp + "\n" + nonce + "\nmpt");
         assertThat(header(template, SgwFeignSignatureInterceptor.HEADER_SIGNATURE)).isEqualTo(expected);
     }

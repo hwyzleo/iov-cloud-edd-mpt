@@ -2,10 +2,13 @@ package net.hwyz.iov.cloud.edd.mpt.service.interceptor;
 
 import feign.RequestTemplate;
 import feign.RequestInterceptor;
+import feign.Target;
 import lombok.extern.slf4j.Slf4j;
 import net.hwyz.iov.cloud.edd.mpt.service.config.SgwInternalProperties;
 import net.hwyz.iov.cloud.framework.common.constant.ServiceNameConstants;
 import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -190,7 +193,54 @@ public class SgwFeignSignatureInterceptor implements RequestInterceptor {
             int slash = url.indexOf('/', scheme + 3);
             url = slash >= 0 ? url.substring(slash) : "/";
         }
-        return url.isEmpty() ? "/" : url;
+        if (url.isEmpty()) {
+            url = "/";
+        }
+        return withClientPath(template, url);
+    }
+
+    /**
+     * 补全 {@code @FeignClient(path = ...)} 前缀。
+     * <p>
+     * Feign 在 {@code RequestInterceptor} 执行完之后才通过 {@code target.apply()} 把
+     * {@code @FeignClient} 的 {@code path} 拼到 URL 上，因此拦截器内 {@code template.url()} 只有方法级路径
+     * （如 {@code /policies/auth}）。服务网关校验的是真实入站 {@code rawPath}
+     * （如 {@code /api/service/sgw/v1/policies/auth}），不补全会必然验签失败。
+     *
+     * @param template 请求模板
+     * @param path     方法级路径
+     * @return 完整签名路径
+     */
+    private String withClientPath(RequestTemplate template, String path) {
+        String prefix = clientPath(template);
+        if (prefix == null || prefix.isBlank()) {
+            return path;
+        }
+        String normalized = prefix.startsWith("/") ? prefix : "/" + prefix;
+        if (normalized.endsWith("/")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+        if (path.equals(normalized) || path.startsWith(normalized + "/")) {
+            return path;
+        }
+        return normalized + (path.startsWith("/") ? path : "/" + path);
+    }
+
+    /**
+     * 读取 Feign 客户端声明的路径前缀，取不到时退回配置项
+     *
+     * @param template 请求模板
+     * @return 路径前缀，可能为空
+     */
+    private String clientPath(RequestTemplate template) {
+        Target<?> target = template.feignTarget();
+        if (target != null) {
+            FeignClient annotation = AnnotatedElementUtils.findMergedAnnotation(target.type(), FeignClient.class);
+            if (annotation != null && annotation.path() != null && !annotation.path().isBlank()) {
+                return annotation.path();
+            }
+        }
+        return properties.getPathPrefix();
     }
 
     private void putHeader(RequestTemplate template, String name, String value) {
