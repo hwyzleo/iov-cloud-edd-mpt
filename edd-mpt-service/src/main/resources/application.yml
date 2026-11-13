@@ -8,3 +8,7 @@ mpt:
       enabled: true
       client-id: ${SGW_INTERNAL_CLIENT:mpt}
       secret: ${SGW_INTERNAL_SECRET:}
+  avatar:
+    upload:
+      # 头像上传凭证绑定有效期（秒），不得短于 EDD-OSS 预签名有效期（EDD-MPT-DSN-CR-001 §3.2）
+      bind-ttl-seconds: ${MPT_AVATAR_UPLOAD_BIND_TTL_SECONDS:1800}

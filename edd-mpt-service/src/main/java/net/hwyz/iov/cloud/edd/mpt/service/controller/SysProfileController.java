@@ -1,27 +1,23 @@
 package net.hwyz.iov.cloud.edd.mpt.service.controller;
 
-import cn.hutool.core.util.ObjUtil;
+import jakarta.validation.Valid;
 import net.hwyz.iov.cloud.framework.audit.annotation.Log;
 import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
-import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
-import net.hwyz.iov.cloud.framework.common.util.FileTypeUtil;
-import net.hwyz.iov.cloud.framework.common.util.MimeTypeUtil;
 import net.hwyz.iov.cloud.framework.common.util.StrUtil;
 import net.hwyz.iov.cloud.framework.web.controller.BaseController;
 import net.hwyz.iov.cloud.framework.common.bean.AjaxResult;
 import net.hwyz.iov.cloud.framework.security.service.TokenService;
 import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
-import net.hwyz.iov.cloud.edd.mpt.api.RemoteFileService;
-import net.hwyz.iov.cloud.edd.mpt.api.domain.SysFile;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysPwd;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysUser;
 import net.hwyz.iov.cloud.edd.mpt.api.model.LoginUser;
+import net.hwyz.iov.cloud.edd.mpt.service.domain.dto.AvatarUploadCompleteDto;
+import net.hwyz.iov.cloud.edd.mpt.service.domain.dto.AvatarUploadTicketDto;
+import net.hwyz.iov.cloud.edd.mpt.service.domain.vo.AvatarUploadCompleteVo;
+import net.hwyz.iov.cloud.edd.mpt.service.service.IProfileAvatarService;
 import net.hwyz.iov.cloud.edd.mpt.service.service.ISysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Arrays;
 
 /**
  * 个人信息 业务处理
@@ -35,10 +31,10 @@ public class SysProfileController extends BaseController {
     private ISysUserService userService;
 
     @Autowired
-    private TokenService tokenService;
+    private IProfileAvatarService profileAvatarService;
 
     @Autowired
-    private RemoteFileService remoteFileService;
+    private TokenService tokenService;
 
     /**
      * 个人信息
@@ -107,31 +103,27 @@ public class SysProfileController extends BaseController {
     }
 
     /**
-     * 头像上传
+     * 申请头像上传凭证（EDD-MPT-DSN-CR-001 §5.1）
+     */
+    @PostMapping("/avatar/tickets")
+    public AjaxResult createAvatarTicket(@Valid @RequestBody AvatarUploadTicketDto dto) {
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        return AjaxResult.success(profileAvatarService.generateTicket(dto, loginUser.getUserid()));
+    }
+
+    /**
+     * 完成头像上传确认（EDD-MPT-DSN-CR-001 §5.2）
      */
     @Log(title = "用户头像", businessType = BusinessType.UPDATE)
-    @PostMapping("/avatar")
-    public AjaxResult avatar(@RequestParam("avatarfile") MultipartFile file) {
-        if (!file.isEmpty()) {
-            LoginUser loginUser = SecurityUtils.getLoginUser();
-            String extension = FileTypeUtil.getExtension(file);
-            if (!StrUtil.equalsAnyIgnoreCase(extension, MimeTypeUtil.IMAGE_EXTENSION)) {
-                return error("文件格式不正确，请上传" + Arrays.toString(MimeTypeUtil.IMAGE_EXTENSION) + "格式");
-            }
-            ApiResponse<SysFile> fileResult = remoteFileService.upload(file);
-            if (ObjUtil.isNull(fileResult) || ObjUtil.isNull(fileResult.getData())) {
-                return error("文件服务异常，请联系管理员");
-            }
-            String url = fileResult.getData().getUrl();
-            if (userService.updateUserAvatar(loginUser.getUsername(), url)) {
-                AjaxResult ajax = AjaxResult.success();
-                ajax.put("imgUrl", url);
-                // 更新缓存用户头像
-                loginUser.getSysUser().setAvatar(url);
-                tokenService.setLoginUser(loginUser);
-                return ajax;
-            }
-        }
-        return error("上传图片异常，请联系管理员");
+    @PostMapping("/avatar/tickets/{objectId}/complete")
+    public AjaxResult completeAvatarUpload(@PathVariable String objectId,
+                                           @Valid @RequestBody AvatarUploadCompleteDto dto) {
+        LoginUser loginUser = SecurityUtils.getLoginUser();
+        AvatarUploadCompleteVo vo = profileAvatarService.complete(objectId, dto.getUploadToken(),
+                loginUser.getUserid(), loginUser.getUsername());
+        // 更新缓存用户头像，保证个人中心与顶部导航立即生效
+        loginUser.getSysUser().setAvatar(vo.getImgUrl());
+        tokenService.setLoginUser(loginUser);
+        return AjaxResult.success(vo);
     }
 }

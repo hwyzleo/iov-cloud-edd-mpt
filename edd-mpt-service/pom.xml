@@ -16,6 +16,7 @@
 
     <properties>
         <edd-mpt.version>0.0.1-SNAPSHOT</edd-mpt.version>
+        <oss.version>0.0.1-SNAPSHOT</oss.version>
     </properties>
 
     <dependencies>
@@ -30,6 +31,13 @@
             <groupId>net.hwyz.iov.cloud.edd</groupId>
             <artifactId>edd-sgw-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+        <!-- 对象存储契约（EDD-MPT-DSN-CR-001：头像 EDD-OSS 直传） -->
+        <dependency>
+            <groupId>net.hwyz.iov.cloud.edd</groupId>
+            <artifactId>edd-oss-api</artifactId>
+            <version>${oss.version}</version>
         </dependency>
 
         <!-- 框架：数据权限范围 -->
