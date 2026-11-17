@@ -346,9 +346,9 @@ public class SysUserController extends BaseController {
     }
 
     /**
-     * 可绑定账号的在职员工选项（内部契约，供 EIAM/前端选人，EDD-MPT-DSN-CR-002）
+     * 可绑定账号的在职员工选项（管理后台选人，EDD-MPT-DSN-CR-002）
      */
-    @InnerAuth
+    @RequiresPermissions("system:user:edit")
     @GetMapping("/employee/options")
     public ApiResponse<List<EmployeeOptionExService>> employeeOptions(@RequestParam(required = false) String key) {
         return ApiResponse.ok(((net.hwyz.iov.cloud.edd.mpt.service.service.impl.SysUserServiceImpl) userService)
