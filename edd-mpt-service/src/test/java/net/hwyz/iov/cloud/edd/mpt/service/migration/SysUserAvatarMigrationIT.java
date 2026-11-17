@@ -60,9 +60,10 @@ class SysUserAvatarMigrationIT {
             migrateTo(null);
 
             assertThat(columnLength("avatar")).isEqualTo(500L);
-            assertThat(columnCount()).isEqualTo(19);
+            // EDD-MPT-DSN-CR-002（V9）在 sys_user 上新增 employee_id 与 pwd_reset_required，列数 19 → 21
+            assertThat(columnCount()).isEqualTo(21);
             assertThat(columnComment("avatar")).isEqualTo("头像地址");
-            assertThat(appliedVersion()).isEqualTo("6");
+            assertThat(appliedVersion()).isEqualTo("9");
         } finally {
             dropDatabase();
         }

@@ -203,4 +203,36 @@ public interface ISysUserService {
      * @return 结果
      */
     public String importUser(List<SysUser> userList, Boolean isUpdateSupport, String operName);
+
+    /**
+     * 通过员工ID查询用户（EDD-MPT-DSN-CR-002）
+     *
+     * @param employeeId ORG 员工ID
+     * @return 用户
+     */
+    public SysUser selectUserByEmployeeId(Long employeeId);
+
+    /**
+     * 按员工信息幂等开通账号（内部契约，供 EIAM 调用）
+     *
+     * @param user 开通请求（employeeId/employeeCode/employeeName/phone/email）
+     * @return 账号
+     */
+    public SysUser provisionUser(SysUser user);
+
+    /**
+     * 按员工ID停用账号（内部契约，供 EIAM 调用）
+     *
+     * @param employeeId ORG 员工ID
+     * @return 影响的账号数
+     */
+    public int disableByEmployeeId(Long employeeId);
+
+    /**
+     * 解绑账号与员工的关联
+     *
+     * @param userId 用户ID
+     * @return 结果
+     */
+    public int unbindEmployee(Long userId);
 }

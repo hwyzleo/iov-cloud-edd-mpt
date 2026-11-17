@@ -7,6 +7,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <resultMap type="net.hwyz.iov.cloud.edd.mpt.api.domain.SysUser" id="SysUserResult">
         <id     property="userId"       column="user_id"      />
         <result property="deptId"       column="dept_id"      />
+        <result property="employeeId"   column="employee_id"  />
+        <result property="pwdResetRequired" column="pwd_reset_required" />
         <result property="userName"     column="user_name"    />
         <result property="nickName"     column="nick_name"    />
         <result property="email"        column="email"        />
@@ -47,7 +49,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 	
 	<sql id="selectUserVo">
-        select u.user_id, u.dept_id, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, 
+        select u.user_id, u.dept_id, u.employee_id, u.pwd_reset_required, u.user_name, u.nick_name, u.email, u.avatar, u.phonenumber, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, 
         d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.status as dept_status,
         r.role_id, r.role_name, r.role_key, r.role_sort, r.data_scope, r.status as role_status
         from sys_user u
@@ -57,7 +59,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </sql>
     
     <select id="selectUserList" parameterType="net.hwyz.iov.cloud.edd.mpt.api.domain.SysUser" resultMap="SysUserResult">
-		select u.user_id, u.dept_id, u.nick_name, u.user_name, u.email, u.avatar, u.phonenumber, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, d.dept_name, d.leader from sys_user u
+		select u.user_id, u.dept_id, u.employee_id, u.pwd_reset_required, u.nick_name, u.user_name, u.email, u.avatar, u.phonenumber, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, d.dept_name, d.leader from sys_user u
 		left join sys_dept d on u.dept_id = d.dept_id
 		where u.del_flag = '0'
 		<if test="userId != null and userId != 0">
@@ -146,6 +148,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  		insert into sys_user(
  			<if test="userId != null and userId != 0">user_id,</if>
  			<if test="deptId != null and deptId != 0">dept_id,</if>
+ 			<if test="employeeId != null">employee_id,</if>
+ 			<if test="pwdResetRequired != null">pwd_reset_required,</if>
  			<if test="userName != null and userName != ''">user_name,</if>
  			<if test="nickName != null and nickName != ''">nick_name,</if>
  			<if test="email != null and email != ''">email,</if>
@@ -178,6 +182,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  		update sys_user
  		<set>
  			<if test="deptId != null and deptId != 0">dept_id = #{deptId},</if>
+ 			<if test="employeeId != null">employee_id = #{employeeId},</if>
+ 			<if test="pwdResetRequired != null">pwd_reset_required = #{pwdResetRequired},</if>
  			<if test="userName != null and userName != ''">user_name = #{userName},</if>
  			<if test="nickName != null and nickName != ''">nick_name = #{nickName},</if>
  			<if test="email != null ">email = #{email},</if>
@@ -217,5 +223,30 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
  			#{userId}
         </foreach> 
  	</delete>
-	
-</mapper> 
+
+	<select id="selectUserByEmployeeId" parameterType="Long" resultMap="SysUserResult">
+	    <include refid="selectUserVo"/>
+		where u.employee_id = #{employeeId} and u.del_flag = '0'
+	</select>
+
+	<select id="selectBoundEmployeeIds" resultType="java.lang.Long">
+		select u.employee_id from sys_user u
+		where u.employee_id in
+		<foreach collection="employeeIds" item="employeeId" open="(" separator="," close=")">
+			#{employeeId}
+		</foreach>
+		and u.del_flag = '0'
+	</select>
+
+	<update id="updateUserEmployeeUnbind" parameterType="Long">
+		update sys_user set employee_id = null where user_id = #{userId}
+	</update>
+
+	<update id="updateStatusByEmployeeId">
+		update sys_user set status = #{status} where employee_id = #{employeeId} and del_flag = '0'
+	</update>
+
+	<select id="selectUserIdsByEmployeeId" parameterType="Long" resultType="java.lang.Long">
+		select user_id from sys_user where employee_id = #{employeeId} and del_flag = '0'
+	</select>
+</mapper>

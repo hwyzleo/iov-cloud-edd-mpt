@@ -2,6 +2,7 @@ package net.hwyz.iov.cloud.edd.mpt.service.controller;
 
 import cn.hutool.core.util.ObjUtil;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import net.hwyz.iov.cloud.framework.audit.annotation.Log;
 import net.hwyz.iov.cloud.framework.audit.enums.BusinessType;
 import net.hwyz.iov.cloud.framework.common.bean.ApiResponse;
@@ -16,8 +17,11 @@ import net.hwyz.iov.cloud.framework.security.service.TokenService;
 import net.hwyz.iov.cloud.framework.security.util.SecurityUtils;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysDept;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysRole;
+import net.hwyz.iov.cloud.edd.mpt.api.constant.UserConstants;
 import net.hwyz.iov.cloud.edd.mpt.api.domain.SysUser;
+import net.hwyz.iov.cloud.edd.mpt.api.enums.MptUserErrorCode;
 import net.hwyz.iov.cloud.edd.mpt.api.model.LoginUser;
+import net.hwyz.iov.cloud.edd.org.api.vo.EmployeeOptionExService;
 import net.hwyz.iov.cloud.edd.mpt.service.service.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +39,7 @@ import java.util.stream.Collectors;
  *
  * @author hwyz_leo
  */
+@Slf4j
 @RestController
 @RequestMapping("/user")
 public class SysUserController extends BaseController {
@@ -110,11 +115,7 @@ public class SysUserController extends BaseController {
         Set<String> roles = permissionService.getRolePermission(sysUser);
         // 权限集合
         Set<String> permissions = permissionService.getMenuPermission(sysUser);
-        LoginUser sysUserVo = new LoginUser();
-        sysUserVo.setSysUser(sysUser);
-        sysUserVo.setRoles(roles);
-        sysUserVo.setPermissions(permissions);
-        return ApiResponse.ok(sysUserVo);
+        return ApiResponse.ok(buildLoginUser(sysUser, roles, permissions));
     }
 
     /**
@@ -303,5 +304,76 @@ public class SysUserController extends BaseController {
     @GetMapping("/deptTree")
     public AjaxResult deptTree(SysDept dept) {
         return success(deptService.selectDeptTreeList(dept));
+    }
+
+    /**
+     * 按员工ID获取登录用户（内部契约，供 EIAM 单点登录使用，EDD-MPT-DSN-CR-002）
+     */
+    @InnerAuth
+    @GetMapping("/info/by-employee/{employeeId}")
+    public ApiResponse<LoginUser> infoByEmployee(@PathVariable("employeeId") Long employeeId) {
+        SysUser sysUser = userService.selectUserByEmployeeId(employeeId);
+        if (ObjUtil.isNull(sysUser)) {
+            return ApiResponse.fail(MptUserErrorCode.USER_BINDING_MISSING);
+        }
+        if (UserConstants.USER_DISABLE.equals(sysUser.getStatus())) {
+            return ApiResponse.fail(MptUserErrorCode.USER_DISABLED);
+        }
+        Set<String> roles = permissionService.getRolePermission(sysUser);
+        Set<String> permissions = permissionService.getMenuPermission(sysUser);
+        return ApiResponse.ok(buildLoginUser(sysUser, roles, permissions));
+    }
+
+    /**
+     * 按员工信息幂等开通账号（内部契约，供 EIAM 自动开通，EDD-MPT-DSN-CR-002）
+     */
+    @InnerAuth
+    @PostMapping("/provision")
+    public ApiResponse<SysUser> provision(@RequestBody SysUser sysUser) {
+        log.info("内部契约：按员工[{}]开通账号", sysUser.getEmployeeId());
+        SysUser provisioned = userService.provisionUser(sysUser);
+        return ApiResponse.ok(provisioned);
+    }
+
+    /**
+     * 按员工ID停用账号（内部契约，供 EIAM 离职联动，EDD-MPT-DSN-CR-002）
+     */
+    @InnerAuth
+    @PostMapping("/provision/disable/{employeeId}")
+    public ApiResponse<Integer> disableByEmployee(@PathVariable("employeeId") Long employeeId) {
+        log.info("内部契约：按员工[{}]停用账号", employeeId);
+        return ApiResponse.ok(userService.disableByEmployeeId(employeeId));
+    }
+
+    /**
+     * 可绑定账号的在职员工选项（内部契约，供 EIAM/前端选人，EDD-MPT-DSN-CR-002）
+     */
+    @InnerAuth
+    @GetMapping("/employee/options")
+    public ApiResponse<List<EmployeeOptionExService>> employeeOptions(@RequestParam(required = false) String key) {
+        return ApiResponse.ok(((net.hwyz.iov.cloud.edd.mpt.service.service.impl.SysUserServiceImpl) userService)
+                .listEmployeeOptions(key));
+    }
+
+    /**
+     * 解绑账号与员工的关联
+     */
+    @RequiresPermissions("system:user:edit")
+    @Log(title = "用户管理", businessType = BusinessType.UPDATE)
+    @PutMapping("/{userId}/employee/unbind")
+    public AjaxResult unbindEmployee(@PathVariable Long userId) {
+        return toAjax(userService.unbindEmployee(userId));
+    }
+
+    /**
+     * 组装登录用户（角色/权限/员工标识）
+     */
+    private LoginUser buildLoginUser(SysUser sysUser, Set<String> roles, Set<String> permissions) {
+        LoginUser loginUser = new LoginUser();
+        loginUser.setSysUser(sysUser);
+        loginUser.setEmployeeId(sysUser.getEmployeeId());
+        loginUser.setRoles(roles);
+        loginUser.setPermissions(permissions);
+        return loginUser;
     }
 }

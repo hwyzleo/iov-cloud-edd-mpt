@@ -17,6 +17,7 @@
     <properties>
         <edd-mpt.version>0.0.1-SNAPSHOT</edd-mpt.version>
         <oss.version>0.0.1-SNAPSHOT</oss.version>
+        <org.version>0.0.1-SNAPSHOT</org.version>
     </properties>
 
     <dependencies>
@@ -38,6 +39,11 @@
             <groupId>net.hwyz.iov.cloud.edd</groupId>
             <artifactId>edd-oss-api</artifactId>
             <version>${oss.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.hwyz.iov.cloud.edd</groupId>
+            <artifactId>edd-org-api</artifactId>
+            <version>${org.version}</version>
         </dependency>
 
         <!-- 框架：数据权限范围 -->

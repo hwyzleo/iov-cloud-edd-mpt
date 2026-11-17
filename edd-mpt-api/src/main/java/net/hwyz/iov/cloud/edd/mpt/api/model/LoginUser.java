@@ -54,6 +54,11 @@ public class LoginUser implements Serializable {
     private Set<String> roles;
 
     /**
+     * 关联的 ORG 员工ID（未绑定账号时为空）
+     */
+    private Long employeeId;
+
+    /**
      * 用户信息
      */
     private SysUser sysUser;
@@ -128,5 +133,13 @@ public class LoginUser implements Serializable {
 
     public void setSysUser(SysUser sysUser) {
         this.sysUser = sysUser;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
     }
 }

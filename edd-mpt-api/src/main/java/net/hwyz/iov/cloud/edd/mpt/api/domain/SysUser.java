@@ -33,6 +33,16 @@ public class SysUser extends BaseEntity {
     private Long deptId;
 
     /**
+     * 关联的 ORG 员工ID（唯一，纯管理员账号为空）
+     */
+    private Long employeeId;
+
+    /**
+     * 是否必须修改密码：0-否，1-是（自动开通的账号为 1）
+     */
+    private Integer pwdResetRequired;
+
+    /**
      * 用户账号
      */
     @Excel(name = "登录名称")
@@ -290,6 +300,22 @@ public class SysUser extends BaseEntity {
 
     public void setRoleId(Long roleId) {
         this.roleId = roleId;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public Integer getPwdResetRequired() {
+        return pwdResetRequired;
+    }
+
+    public void setPwdResetRequired(Integer pwdResetRequired) {
+        this.pwdResetRequired = pwdResetRequired;
     }
 
     @Override

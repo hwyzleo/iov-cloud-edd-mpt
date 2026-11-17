@@ -4,6 +4,9 @@ import net.hwyz.iov.cloud.edd.mpt.api.domain.SysUser;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * 用户表 数据层
@@ -125,4 +128,45 @@ public interface SysUserMapper
      * @return 结果
      */
     public SysUser checkEmailUnique(String email);
+
+    /**
+     * 通过员工ID查询用户（EDD-MPT-DSN-CR-002）
+     *
+     * @param employeeId ORG 员工ID
+     * @return 用户
+     */
+    public SysUser selectUserByEmployeeId(Long employeeId);
+
+    /**
+     * 查询给定员工中已被账号绑定的员工ID集合
+     *
+     * @param employeeIds 员工ID集合
+     * @return 已绑定员工ID
+     */
+    public List<Long> selectBoundEmployeeIds(@Param("employeeIds") List<Long> employeeIds);
+
+    /**
+     * 解绑用户与员工的关联
+     *
+     * @param userId 用户ID
+     * @return 结果
+     */
+    public int updateUserEmployeeUnbind(Long userId);
+
+    /**
+     * 按员工ID更新账号状态
+     *
+     * @param employeeId 员工ID
+     * @param status     状态（0 正常 1 停用）
+     * @return 结果
+     */
+    public int updateStatusByEmployeeId(@Param("employeeId") Long employeeId, @Param("status") String status);
+
+    /**
+     * 按员工ID查询用户ID列表（用于会话回收）
+     *
+     * @param employeeId 员工ID
+     * @return 用户ID列表
+     */
+    public List<Long> selectUserIdsByEmployeeId(Long employeeId);
 }
