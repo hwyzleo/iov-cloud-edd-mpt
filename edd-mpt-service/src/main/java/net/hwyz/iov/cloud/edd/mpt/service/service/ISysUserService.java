@@ -229,6 +229,14 @@ public interface ISysUserService {
     public int disableByEmployeeId(Long employeeId);
 
     /**
+     * 按员工ID启用账号（内部契约，供 EIAM 身份目录启用联动；SEC-EIAM-DSN-CR-002 原地修订·第二次）
+     *
+     * @param employeeId ORG 员工ID
+     * @return 影响的账号数
+     */
+    public int enableByEmployeeId(Long employeeId);
+
+    /**
      * 解绑账号与员工的关联
      *
      * @param userId 用户ID

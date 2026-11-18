@@ -141,6 +141,16 @@ class SysUserEmployeeBindingTest {
     }
 
     @Test
+    @DisplayName("按员工启用：恢复账号为正常状态（SEC-EIAM 身份目录启用联动）")
+    void enableByEmployeeId() {
+        when(userMapper.updateStatusByEmployeeId(1001L, "0")).thenReturn(1);
+
+        assertEquals(1, userService.enableByEmployeeId(1001L));
+        verify(userMapper).updateStatusByEmployeeId(1001L, "0");
+        assertEquals(0, userService.enableByEmployeeId(null));
+    }
+
+    @Test
     @DisplayName("解绑：清除账号与员工的关联")
     void unbindEmployee() {
         when(userMapper.updateUserEmployeeUnbind(2001L)).thenReturn(1);

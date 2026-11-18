@@ -346,6 +346,16 @@ public class SysUserController extends BaseController {
     }
 
     /**
+     * 按员工ID启用账号（内部契约，供 EIAM 身份目录启用联动，SEC-EIAM-DSN-CR-002 原地修订·第二次）
+     */
+    @InnerAuth
+    @PostMapping("/provision/enable/{employeeId}")
+    public ApiResponse<Integer> enableByEmployee(@PathVariable("employeeId") Long employeeId) {
+        log.info("内部契约：按员工[{}]启用账号", employeeId);
+        return ApiResponse.ok(userService.enableByEmployeeId(employeeId));
+    }
+
+    /**
      * 可绑定账号的在职员工选项（管理后台选人，EDD-MPT-DSN-CR-002）
      */
     @RequiresPermissions("system:user:edit")

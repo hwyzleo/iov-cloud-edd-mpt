@@ -569,6 +569,17 @@ public class SysUserServiceImpl implements ISysUserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int enableByEmployeeId(Long employeeId) {
+        if (employeeId == null) {
+            return 0;
+        }
+        int rows = userMapper.updateStatusByEmployeeId(employeeId, UserConstants.NORMAL);
+        log.info("按员工启用账号：employeeId={}, rows={}", employeeId, rows);
+        return rows;
+    }
+
+    @Override
     public int unbindEmployee(Long userId) {
         return userMapper.updateUserEmployeeUnbind(userId);
     }
