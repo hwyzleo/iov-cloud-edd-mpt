@@ -63,7 +63,8 @@ class SysUserAvatarMigrationIT {
             // EDD-MPT-DSN-CR-002（V9）在 sys_user 上新增 employee_id 与 pwd_reset_required，列数 19 → 21
             assertThat(columnCount()).isEqualTo(21);
             assertThat(columnComment("avatar")).isEqualTo("头像地址");
-            assertThat(appliedVersion()).isEqualTo("9");
+            // V10（OTD-TMS 运单管理菜单）为当前最新迁移版本
+            assertThat(appliedVersion()).isEqualTo("10");
         } finally {
             dropDatabase();
         }
