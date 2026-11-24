@@ -37,7 +37,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * 个人中心头像上传 HTTP 契约测试（EDD-MPT-DSN-CR-001 §5）
+ * 个人中心头像上传 HTTP 契约测试（EDD-MPT-DSN-CR-001 §5）。
+ * <p>
+ * 参数校验失败的状态码按 FW-WEB-DSN-CR-004 错误响应面口径断言：头像接口仍返回旧 {@code AjaxResult}
+ * 信封，不属于管理面 {@code ApiResponse} 契约，因此框架前置校验返回 HTTP 400 + {@code code=100001}；
+ * 业务失败仍由 {@code AvatarUploadExceptionHandler} 返回 HTTP 200 + {@code code=500}。
  *
  * @author hwyz_leo
  */
@@ -111,17 +115,19 @@ class SysProfileAvatarContractTest {
     @Test
     @DisplayName("申请头像上传凭证：参数校验失败由框架前置拦截，不进入业务层")
     void createTicketValidatesRequest() throws Exception {
+        // FW-WEB-DSN-CR-004 起错误响应面按端点声明返回类型判定：本控制器仍用旧 AjaxResult 信封，
+        // 不属于管理面 ApiResponse 契约，因此 Bean Validation 失败返回 HTTP 400 + code=100001。
         mockMvc.perform(post("/user/profile/avatar/tickets")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"originalFilename\":\"  \",\"contentType\":\"image/png\",\"size\":32768}"))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("100001"))
                 .andExpect(jsonPath("$.message").value("原始文件名不能为空"));
 
         mockMvc.perform(post("/user/profile/avatar/tickets")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"originalFilename\":\"avatar.png\",\"contentType\":\"image/png\",\"size\":0}"))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("100001"));
 
         verifyNoInteractions(profileAvatarService);
@@ -184,10 +190,11 @@ class SysProfileAvatarContractTest {
     @Test
     @DisplayName("完成头像上传：uploadToken 缺失时由框架前置拦截")
     void completeValidatesUploadToken() throws Exception {
+        // 同 createTicketValidatesRequest：旧 AjaxResult 信封端点按机器面返回 HTTP 400 + code=100001
         mockMvc.perform(post("/user/profile/avatar/tickets/obj-1/complete")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"uploadToken\":\"\"}"))
-                .andExpect(status().isOk())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("100001"))
                 .andExpect(jsonPath("$.message").value("上传凭证不能为空"));
 

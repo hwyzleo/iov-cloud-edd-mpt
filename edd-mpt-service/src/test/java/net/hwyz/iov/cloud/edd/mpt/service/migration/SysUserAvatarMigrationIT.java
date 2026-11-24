@@ -9,6 +9,13 @@ import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -41,6 +48,8 @@ class SysUserAvatarMigrationIT {
 
     private static final String DATABASE = "db_mpt_avatar_it";
 
+    private static final Pattern MIGRATION_FILE = Pattern.compile("^V(\\d+)__.*\\.sql$");
+
     private static final String URL = HOST + DATABASE + PARAMS;
 
     @BeforeAll
@@ -63,8 +72,8 @@ class SysUserAvatarMigrationIT {
             // EDD-MPT-DSN-CR-002（V9）在 sys_user 上新增 employee_id 与 pwd_reset_required，列数 19 → 21
             assertThat(columnCount()).isEqualTo(21);
             assertThat(columnComment("avatar")).isEqualTo("头像地址");
-            // V10（OTD-TMS 运单管理菜单）为当前最新迁移版本
-            assertThat(appliedVersion()).isEqualTo("10");
+            // 迁移全部应用：最新已应用版本与 db/migration 中最大版本一致（避免每次新增迁移都要改断言）
+            assertThat(appliedVersion()).isEqualTo(latestMigrationVersion());
         } finally {
             dropDatabase();
         }
@@ -116,6 +125,28 @@ class SysUserAvatarMigrationIT {
              ResultSet resultSet = statement.executeQuery(sql)) {
             assertThat(resultSet.next()).isTrue();
             return resultSet.getString(1);
+        }
+    }
+
+    /**
+     * 从 classpath 的 db/migration 目录解析最大迁移版本号
+     *
+     * @return 最大版本号
+     */
+    private String latestMigrationVersion() throws Exception {
+        URL location = Objects.requireNonNull(
+                SysUserAvatarMigrationIT.class.getClassLoader().getResource("db/migration"),
+                "未找到 db/migration 迁移目录");
+        try (Stream<Path> files = Files.list(Path.of(location.toURI()))) {
+            long latest = 0L;
+            for (Path file : files.toList()) {
+                Matcher matcher = MIGRATION_FILE.matcher(file.getFileName().toString());
+                if (matcher.matches()) {
+                    latest = Math.max(latest, Long.parseLong(matcher.group(1)));
+                }
+            }
+            assertThat(latest).as("db/migration 应至少包含一个版本").isPositive();
+            return String.valueOf(latest);
         }
     }
 
