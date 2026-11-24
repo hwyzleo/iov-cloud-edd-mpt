@@ -9,8 +9,12 @@ import net.hwyz.iov.cloud.edd.sgw.api.service.SgwPublicationService;
 import net.hwyz.iov.cloud.edd.sgw.api.service.SgwRouteAdminService;
 import net.hwyz.iov.cloud.edd.sgw.api.service.SgwRuntimeService;
 import net.hwyz.iov.cloud.edd.sgw.api.service.SgwUpstreamService;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.request.RouteSaveRequest;
+import net.hwyz.iov.cloud.edd.sgw.api.vo.response.ConfigDiffItemVo;
+import net.hwyz.iov.cloud.edd.sgw.api.vo.response.ConfigFieldDiffVo;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.response.ConfigVersionResponse;
+import net.hwyz.iov.cloud.edd.sgw.api.vo.response.DraftConfigDiffResponse;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.response.ExportResponseVo;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.response.PublicationResponse;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.response.RouteResponse;
@@ -29,6 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import net.hwyz.iov.cloud.framework.security.annotation.RequiresPermissions;
 
 import java.time.Instant;
 import java.util.List;
@@ -228,6 +233,47 @@ class SgwAdminWebContractTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.fromVersionNo").value(1))
                 .andExpect(jsonPath("$.data.toVersionNo").value(2));
+    }
+
+    @Test
+    @DisplayName("待发布变更预览透传服务网关结果并复用配置查询权限")
+    void draftDiffDelegatesWithQueryPermission() throws Exception {
+        JsonNodeFactory nodes = JsonNodeFactory.instance;
+        when(configVersionService.draftDiff()).thenReturn(ApiResponse.ok(DraftConfigDiffResponse.builder()
+                .baseVersionNo(5L)
+                .draftRevision(18L)
+                .items(List.of(ConfigDiffItemVo.builder()
+                        .objectType("ROUTE")
+                        .code("vehicle-profile")
+                        .changeType("MODIFIED")
+                        .before(nodes.objectNode().put("routeCode", "vehicle-profile").put("priority", 100))
+                        .after(nodes.objectNode().put("routeCode", "vehicle-profile").put("priority", 200))
+                        .fields(List.of(ConfigFieldDiffVo.builder()
+                                .path("/priority")
+                                .changeType("MODIFIED")
+                                .beforeValue(nodes.numberNode(100))
+                                .afterValue(nodes.numberNode(200))
+                                .build()))
+                        .build()))
+                .build()));
+
+        mockMvc.perform(get("/sgw/config-versions/draft-diff"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.baseVersionNo").value(5))
+                .andExpect(jsonPath("$.data.draftRevision").value(18))
+                .andExpect(jsonPath("$.data.items[0].objectType").value("ROUTE"))
+                .andExpect(jsonPath("$.data.items[0].changeType").value("MODIFIED"))
+                .andExpect(jsonPath("$.data.items[0].after.priority").value(200))
+                .andExpect(jsonPath("$.data.items[0].fields[0].path").value("/priority"))
+                .andExpect(jsonPath("$.data.items[0].fields[0].beforeValue").value(100))
+                .andExpect(jsonPath("$.data.items[0].fields[0].afterValue").value(200));
+
+        RequiresPermissions permission = SgwConfigVersionController.class
+                .getMethod("draftDiff").getAnnotation(RequiresPermissions.class);
+        assertThat(permission).isNotNull();
+        assertThat(permission.value()).containsExactly("edd:sgw:config:query");
+        assertThat(SgwConfigVersionController.class.getMethod("draftDiff")
+                .getAnnotation(net.hwyz.iov.cloud.framework.audit.annotation.Log.class)).isNull();
     }
 
     @Test

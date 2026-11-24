@@ -6,6 +6,7 @@ import net.hwyz.iov.cloud.edd.sgw.api.vo.request.RollbackRequest;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.response.ConfigDiffResponse;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.response.ConfigVersionDetailResponse;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.response.ConfigVersionResponse;
+import net.hwyz.iov.cloud.edd.sgw.api.vo.response.DraftConfigDiffResponse;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.response.PublicationResponse;
 import net.hwyz.iov.cloud.edd.sgw.api.vo.response.WorkspaceResponse;
 import net.hwyz.iov.cloud.framework.audit.annotation.Log;
@@ -84,6 +85,17 @@ public class SgwConfigVersionController {
     @GetMapping("/diff")
     public ApiResponse<ConfigDiffResponse> diff(@RequestParam Long from, @RequestParam Long to) {
         return configVersionService.diff(from, to);
+    }
+
+    /**
+     * 待发布配置变更预览（当前发布版本与工作区草稿比较，EDD-SGW-DSN-CR-004）
+     *
+     * @return 待发布差异
+     */
+    @RequiresPermissions("edd:sgw:config:query")
+    @GetMapping("/draft-diff")
+    public ApiResponse<DraftConfigDiffResponse> draftDiff() {
+        return configVersionService.draftDiff();
     }
 
     /**
