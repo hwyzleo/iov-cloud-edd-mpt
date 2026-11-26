@@ -57,7 +57,7 @@ class MktCmsExploreMenuMigrationIT {
             long marketingId = scalar("SELECT menu_id FROM sys_menu WHERE parent_id = 0 AND path = 'marketing'");
             seedRolesAndGrants(marketingId);
 
-            migrateTo(null);
+            migrateTo("16");
 
             long exploreId = scalar("SELECT menu_id FROM sys_menu WHERE parent_id = " + marketingId
                     + " AND path = 'explore'");
@@ -85,7 +85,7 @@ class MktCmsExploreMenuMigrationIT {
                     .isEqualTo(5);
 
             // 迁移重复执行不产生重复菜单/授权
-            migrateTo(null);
+            migrateTo("16");
             assertThat(count("SELECT COUNT(*) FROM sys_menu WHERE parent_id = " + marketingId
                     + " AND path = 'explore'")).isEqualTo(1);
             assertThat(count("SELECT COUNT(*) FROM sys_menu WHERE parent_id = " + exploreId
